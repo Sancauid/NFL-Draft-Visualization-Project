@@ -1,6 +1,5 @@
 DRAFT_DATABASE = "https://gist.githubusercontent.com/kunafuego/106a696e84cbd056e4e2c6a2cc6e8387/raw/db12d21344c086a6e1c6a4e8b769e086e62043bf/draft.csv";
-// Se importa el archivo csv con los datos de los kickers, FGM y FGA no están separados por año.
-KICKERS_DATABASE = "https://gist.githubusercontent.com/kunafuego/106a696e84cbd056e4e2c6a2cc6e8387/raw/db12d21344c086a6e1c6a4e8b769e086e62043bf/kickers.csv";
+KICKERS_DATABASE = "https://gist.githubusercontent.com/Sancauid/aee1813abb6fa4021006d6e5730ceac3/raw/74b87d4d8e9177b8987447d8009e089448c98e4c/kickers.csv";
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -73,9 +72,10 @@ d3.csv(DRAFT_DATABASE)
 
 d3.csv(KICKERS_DATABASE)
     .then((kickers) => {
+    console.log("Kickers");
     console.log(kickers);
     heatMap(kickers);
   })
-  .catch((error) => console.log(error)); 
+  .catch((error) => console.log(error));
 
 
