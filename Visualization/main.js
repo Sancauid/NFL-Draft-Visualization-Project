@@ -8,11 +8,12 @@ const svg = d3.select("#heatmap")
     .attr("width", WIDTH)
     .attr("height", HEIGHT);
 
+
 const MARGIN = {
     top: 50,
     bottom: 70,
     right: 20,
-    left: 20,
+    left: 40,
   };
   
 const HEIGHTVIS = HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -28,16 +29,21 @@ function heatMapKickers(kickersPercentages) {
       .attr("height", HEIGHT)
       .append("g")
 
+  svg.append("image")
+      .attr("href", "post.png")
+      .attr("x", 0)
+      .attr("y", HEIGHT / 2 - 50)
+
   function updateHeatmap() {
       const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
     
       svg.selectAll("rect").remove();
       svg.selectAll("text").remove();
 
-      const colorScale = d3.scaleSequential(d3.interpolateRdBu)
-      .domain([1, 0.2]);
+      const colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
+      .domain([0.2, 1]);    
 
-    const rects = svg.selectAll("rect")
+    svg.selectAll("rect")
       .data(dataForYear, (d) => d.distance)
       .enter()
       .append("rect")
@@ -54,11 +60,14 @@ function heatMapKickers(kickersPercentages) {
       .enter()
       .append("text")
       .attr("x", (_, i) => (i % 6) * (WIDTHVIS / 6) + MARGIN.left + (WIDTHVIS / 12))
-      .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top * 9.5 + (HEIGHTVIS / (6 * Math.ceil(dataForYear.length / 6))))
+      .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top + (HEIGHTVIS / (6 * Math.ceil(dataForYear.length / 6))))
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .style("font-size", "12px")
+      .style("font-size", "36px")
       .style("font-weight", "bold")
+      .style("fill", "white")
+      .style("stroke", "black")
+      .style("stroke-width", "0.5px")
       .text((d) => d.distance);
 
     const yearText = svg.append("text")
@@ -114,7 +123,6 @@ function calculateFieldGoalPercentages(data) {
 
 d3.csv(KICKERS_DATABASE)
     .then((kickers) => {
-    console.log(kickers);
     const kickersPercentages = calculateFieldGoalPercentages(kickers);
     heatMapKickers(kickersPercentages);
   })
