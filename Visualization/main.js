@@ -12,7 +12,7 @@ const MARGIN = {
     top: 50,
     bottom: 70,
     right: 20,
-    left: 60,
+    left: 20,
   };
   
 const HEIGHTVIS = HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -26,7 +26,7 @@ function heatMapKickers(kickersPercentages) {
       .append("svg")
       .attr("width", WIDTH)
       .attr("height", HEIGHT)
-      .append("g");
+      .append("g")
 
   function updateHeatmap() {
       const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
@@ -37,7 +37,7 @@ function heatMapKickers(kickersPercentages) {
       const colorScale = d3.scaleSequential(d3.interpolateRdBu)
       .domain([1, 0.2]);
 
-    svg.selectAll("rect")
+    const rects = svg.selectAll("rect")
       .data(dataForYear, (d) => d.distance)
       .enter()
       .append("rect")
@@ -45,7 +45,9 @@ function heatMapKickers(kickersPercentages) {
       .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top)
       .attr("width", WIDTHVIS / 6)
       .attr("height", HEIGHTVIS / Math.ceil(dataForYear.length / 6))
-      .attr("fill", (d) => colorScale(parseFloat(d.percentage)));
+      .attr("fill", (d) => colorScale(parseFloat(d.percentage)))
+      .attr("stroke", "white")
+      .attr("stroke-width", 2);
 
     svg.selectAll("text")
       .data(dataForYear, (d) => d.distance)
@@ -54,12 +56,12 @@ function heatMapKickers(kickersPercentages) {
       .attr("x", (_, i) => (i % 6) * (WIDTHVIS / 6) + MARGIN.left + (WIDTHVIS / 12))
       .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top * 9.5 + (HEIGHTVIS / (6 * Math.ceil(dataForYear.length / 6))))
       .attr("text-anchor", "middle")
-      .attr("alignment-baseline", "middle")
-      .text((d) => d.distance)
-      .style("fill", "black")
-      .style("font-size", "16px");
+      .attr("dominant-baseline", "middle")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text((d) => d.distance);
 
-    svg.append("text")
+    const yearText = svg.append("text")
       .attr("x", WIDTH / 2)
       .attr("y", MARGIN.top / 2)
       .attr("text-anchor", "middle")
@@ -68,26 +70,24 @@ function heatMapKickers(kickersPercentages) {
       .style("fill", "black")
       .style("font-size", "16px");
 
+      yearText.transition()
+      .duration(1000)
+      .style("opacity", 0)
+      .on("end", function () {
+        d3.select(this)
+          .text(kickersPercentages[currentYearIndex].year)
+          .transition()
+          .duration(1000)
+          .style("opacity", 1);
+      }); 
+
     currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
   }
 
   updateHeatmap();
 
-  setInterval(updateHeatmap, 500);
-    
+  setInterval(updateHeatmap, 1000);
 
-  const colorScale = d3.scaleSequential(d3.interpolateYlOrRd)
-      .domain([0, 1]);
-
-  svg.selectAll("rect")
-      .data(dataForYear)
-      .enter()
-      .append("rect")
-      .attr("x", (_, i) => (i % 6) * (WIDTH / 6))
-      .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHT / Math.ceil(dataForYear.length / 6)))
-      .attr("width", WIDTH / 6)
-      .attr("height", HEIGHT)
-      .attr("fill", d => colorScale(parseFloat(d.percentage)));
 }
 
 function calculateFieldGoalPercentages(data) {
