@@ -8,7 +8,6 @@ const svg = d3.select("#heatmap")
     .attr("width", WIDTH)
     .attr("height", HEIGHT);
 
-
 const MARGIN = {
     top: 50,
     bottom: 70,
@@ -89,20 +88,15 @@ function heatMapKickers(kickersPercentages) {
           .duration(1000)
           .style("opacity", 1);
       }); 
-
     currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
   }
-
   updateHeatmap();
-
   setInterval(updateHeatmap, 1000);
-
 }
 
 function calculateFieldGoalPercentages(data) {
   const results = data.map(entry => {
     const year = entry.Year;
-
     const fgDistances = [
       { distance: "0-19", percentage: parseFloat(entry["FGM0-19"]) / parseFloat(entry["FGA0-19"]) },
       { distance: "20-29", percentage: parseFloat(entry["FGM20-29"]) / parseFloat(entry["FGA20-29"]) },
@@ -111,13 +105,11 @@ function calculateFieldGoalPercentages(data) {
       { distance: "50+", percentage: parseFloat(entry["FGM50+"]) / parseFloat(entry["FGA50+"]) },
       { distance: "Total", percentage: parseFloat(entry["FGMTot"]) / parseFloat(entry["FGATot"]) }
     ];
-
     return {
       year: year,
       fieldGoalPercentages: fgDistances,
     };
   });
-
   return results;
 }
 
@@ -130,9 +122,7 @@ d3.csv(KICKERS_DATABASE)
 
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
-    console.log(draft);
+      createScatterPlot(draft)
   })
   .catch((error) => console.log(error)); 
-
-
 
