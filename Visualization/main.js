@@ -32,10 +32,13 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       .attr("x", 0)
       .attr("y", HEIGHT / 2 - 50)
 
-  const tooltip = d3.select("body")
+  const tooltip = d3
+      .select("body")
       .append("div")
       .attr("class", "tooltip")
-      .style("opacity", 0);
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("top", "750px")
 
   svg.on("click", function() {
       addFootball();
@@ -62,8 +65,6 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           });
       }
       
-      
-
   svg
     .selectAll("g")
     .data(dataForYear)
@@ -77,22 +78,23 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           .attr("class", "rectFieldGoal")
           .attr("x", (_, i) => (i % 6) * (WIDTHVIS / 6) + MARGIN.left)
           .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top)
-          .attr("width", 0)
-          .attr("height", 0)
           .attr("opacity", 0.8)
           .attr("stroke", "white")
           .attr("stroke-width", 2)
           .on("mouseover", function(event, d){
             stopTimer();
             tooltip
-            .text("Percentage: " + d.percentage * 100 + "%")
-            .attr("x", event.pageX)
-            .attr("y", event.pageY - 10)
+            .text("Percentage of Field Goals Made: " + (d.percentage * 100).toFixed(1) + "%")
+            .style("left", "50%")
+            .style("transform", "translateX(-50%)")
             .style("opacity", 1);
             d3.select(this).attr("stroke", "black");
             d3.select(this).attr("stroke-width", 4);
-            d3.select(this).attr("opacity", 1);
             d3.select(this.parentNode).raise();
+            d3.select(this.parentNode).select(".textFieldGoal")
+            .style("fill", "black")
+            .style("stroke", "white")
+            .style("stroke-width", "1px");
             })
           .on("mouseout", function(event, d){
             resumeTimer();
@@ -102,6 +104,10 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
             d3.select(this).attr("stroke-width", 2);
             d3.select(this).attr("opacity", 0.8);
             d3.select(this).style("z-index", "auto");
+            d3.select(this.parentNode).select(".textFieldGoal")
+            .style("fill", "white")
+            .style("stroke", "black")
+            .style("stroke-width", "0.5px");
           })
           .transition()
           .attr("width", WIDTHVIS / 6)
@@ -208,6 +214,65 @@ function runHeatMap() {
   heatMapKickers(kickersPercentages, currentYearIndex);
 }
 
+
+
+function scatterPlotDraft(dataDraftUnfiltered) {
+
+  const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
+  const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
+
+  const dataDraft = dataDraftUnfiltered.map(d => ({
+      ...d,
+      wAV: d.wAV !== "" ? d.wAV : 0
+    }));
+  
+
+  const svg = d3.select("#scatterplot")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT);
+
+  const xScale = d3.scaleLinear()
+    .domain([0, 260])
+    .range([MARGIN.left, INNER_WIDTH]);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataDraft, d => parseInt(d.wAV)) + 5])
+    .range([INNER_HEIGHT, MARGIN.top]);
+
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
+
+  svg.append("g")
+    .attr("class", "x-axis")
+    .attr("transform", `translate(0, ${INNER_HEIGHT})`)
+    .call(xAxis);
+
+  svg.append("g")
+    .attr("class", "y-axis")
+    .attr("transform", `translate(${MARGIN.left}, 0)`)
+    .call(yAxis);
+
+  svg
+    .selectAll("g")
+    .data(dataDraft)
+    .join(
+
+      enter => {
+
+        const G = enter.append("g")
+
+        G.append("circle")
+          .attr("class", "playerDots")
+          .attr("cx", d => xScale(parseInt(d.Pick)))
+          .attr("cy", d => yScale(d.wAV))
+          .attr("r", 5)
+          .attr("fill", "steelblue");
+          
+      }
+    )
+  }
+
+
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
     kickersPercentages = calculateFieldGoalPercentages(kickers);
@@ -218,7 +283,6 @@ d3.csv(KICKERS_DATABASE)
 
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
-      console.log(draft)
-      //createScatterPlot(draft)
+      scatterPlotDraft(draft)
   })
   .catch((error) => console.log(error));
