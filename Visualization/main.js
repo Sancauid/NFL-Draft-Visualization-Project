@@ -39,6 +39,7 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
 
   svg.on("click", function() {
       addFootball();
+      invertOrder();
       });
 
   function addFootball() {
@@ -126,7 +127,7 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
 
         update.selectAll(".textYear")
           .transition()
-          .duration(500)
+          .duration(200)
           .text("Año: " + year)
  
         
@@ -134,7 +135,7 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           .attr("class", ".rectFieldGoal")
           .data(dataForYear, (d) => d.distance)
           .transition()
-          .duration(500)
+          .duration(200)
           .attr("fill", (d) => colorScale(parseFloat(d.percentage)))
         
       },
@@ -169,25 +170,39 @@ function calculateFieldGoalPercentages(data) {
 let intervalId;
 let kickersPercentages;
 let currentYearIndex;
+let order = 1;
 
 function stopTimer() {
   clearInterval(intervalId);
 }
 
 function resumeTimer() {
-  intervalId = setInterval(runHeatMap, 1000);
+  intervalId = setInterval(runHeatMap, 500);
+}
+
+function invertOrder() {
+  if (order == -1){
+    order = 1;
+  }
+  else {
+    order = -1;
+  }
+}
+
+function mod(n, m) {
+  return ((n % m) + m) % m;
 }
 
 function runHeatMap() {
+  currentYearIndex = mod(currentYearIndex + order, kickersPercentages.length);
   heatMapKickers(kickersPercentages, currentYearIndex);
-  currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
 }
 
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
     kickersPercentages = calculateFieldGoalPercentages(kickers);
     currentYearIndex = 0;
-    intervalId = setInterval(runHeatMap, 1000);
+    intervalId = setInterval(runHeatMap, 500);
   })
   .catch((error) => console.log(error))
 
