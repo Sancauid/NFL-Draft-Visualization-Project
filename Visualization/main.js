@@ -4,10 +4,6 @@ KICKERS_DATABASE = "https://gist.githubusercontent.com/Sancauid/aee1813abb6fa402
 const WIDTH = 1200;
 const HEIGHT = 600;
 
-const svg = d3.select("#heatmap")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT);
-
 const MARGIN = {
     top: 50,
     bottom: 70,
@@ -23,24 +19,25 @@ function heatMapKickers(kickersPercentages) {
   let currentYearIndex = 0;
 
   const svg = d3.select("#heatmap")
-      .append("svg")
-      .attr("width", WIDTH)
-      .attr("height", HEIGHT)
-      .append("g")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT);
+  
+  svg.on("click", addFootball);
 
   svg.append("image")
       .attr("href", "post.png")
       .attr("x", 0)
       .attr("y", HEIGHT / 2 - 50)
 
-  function updateHeatmap() {
-      const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
-    
-      svg.selectAll("rect").remove();
-      svg.selectAll("text").remove();
+  const colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
+      .domain([0.2, 1]); 
+      
 
-      const colorScale = d3.scaleSequential(d3.interpolateRdYlGn)
-      .domain([0.2, 1]);    
+  function updateHeatmap() {
+    const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
+    
+    svg.selectAll("rect").remove();
+    svg.selectAll("text").remove();   
 
     svg.selectAll("rect")
       .data(dataForYear, (d) => d.distance)
@@ -88,8 +85,31 @@ function heatMapKickers(kickersPercentages) {
           .duration(1000)
           .style("opacity", 1);
       }); 
+
     currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
   }
+
+  function addFootball() {
+    svg.append("image")
+      .attr("href", "football.png")
+      .attr("width", 40)
+      .attr("height", 40)
+      .attr("x", WIDTH - 50)
+      .attr("y", HEIGHT / 2 - 45)
+      .style("opacity", 0)
+      .transition()
+      .duration(1000)
+      .attr("x", -50)
+      .style("opacity", 1)
+      .on("end", function() {
+        d3.select(this)
+          .transition()
+          .duration(1000)
+          .attr("x", -50)
+          .remove();
+      });
+  }
+
   updateHeatmap();
   setInterval(updateHeatmap, 1000);
 }
