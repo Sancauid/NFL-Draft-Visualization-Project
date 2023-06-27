@@ -10,6 +10,10 @@ const MARGIN = {
     right: 20,
     left: 40,
   };
+
+let intervalId;
+let kickersPercentages;
+let currentYearIndex;
   
 const HEIGHTVIS = HEIGHT - MARGIN.top - MARGIN.bottom;
 const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
@@ -32,7 +36,12 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       .attr("x", 0)
       .attr("y", HEIGHT / 2 - 50)
 
-  svg.on("click", addFootball);
+
+
+    svg.on("click", function() {
+      addFootball();
+      });
+
   function addFootball() {
     svg.append("image")
       .attr("href", "football.png")
@@ -70,6 +79,8 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           .attr("height", 0)
           .attr("stroke", "white")
           .attr("stroke-width", 2)
+          .on("mouseover", stopTimer)
+          .on("mouseout", resumeTimer)
           .transition()
           .attr("width", WIDTHVIS / 6)
           .attr("height", HEIGHTVIS / Math.ceil(dataForYear.length / 6))
@@ -103,7 +114,9 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       update => {
 
         update.selectAll(".textYear")
-        .text("Año: " + year)
+          .transition()
+          .duration(500)
+          .text("Año: " + year)
  
         
         update.selectAll("rect")
@@ -142,16 +155,24 @@ function calculateFieldGoalPercentages(data) {
   return results;
 }
 
+function stopTimer() {
+  clearInterval(intervalId);
+}
+
+function resumeTimer() {
+  intervalId = setInterval(runHeatMap, 1000);
+}
+
+function runHeatMap() {
+  heatMapKickers(kickersPercentages, currentYearIndex);
+  currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
+}
+
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
-    const kickersPercentages = calculateFieldGoalPercentages(kickers);
-    let currentYearIndex = 0;
-    function runHeatMap() {
-      heatMapKickers(kickersPercentages, currentYearIndex);
-      currentYearIndex = (currentYearIndex + 1) % kickersPercentages.length;
-    }
-    runHeatMap();
-    setInterval(runHeatMap, 1000);
+    kickersPercentages = calculateFieldGoalPercentages(kickers);
+    currentYearIndex = 0;
+    intervalId = setInterval(runHeatMap, 1000);
   })
   .catch((error) => console.log(error))
 
@@ -160,5 +181,4 @@ d3.csv(DRAFT_DATABASE)
       console.log(draft)
       //createScatterPlot(draft)
   })
-  .catch((error) => console.log(error)); 
-
+  .catch((error) => console.log(error));
