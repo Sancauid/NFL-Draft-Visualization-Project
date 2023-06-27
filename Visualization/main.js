@@ -42,26 +42,27 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       invertOrder();
       });
 
-  function addFootball() {
-    svg.append("image")
-      .attr("href", "football.png")
-      .attr("width", 40)
-      .attr("height", 40)
-      .attr("x", WIDTH - 50)
-      .attr("y", HEIGHT / 2 - 45)
-      .style("opacity", 0)
-      .transition()
-      .duration(1000)
-      .attr("x", -50)
-      .style("opacity", 1)
-      .on("end", function() {
-        d3.select(this)
+      function addFootball() {
+        const initialX = (order === 1) ? -50 : WIDTH - 50;
+        const finalX = (order === 1) ? WIDTH - 50 : -50;
+      
+        svg.append("image")
+          .attr("href", "football.png")
+          .attr("width", 40)
+          .attr("height", 40)
+          .attr("x", initialX)
+          .attr("y", HEIGHT / 2 - 45)
+          .style("opacity", 0)
           .transition()
           .duration(1000)
-          .attr("x", -50)
-          .remove();
-      });  
-    }
+          .attr("x", finalX)
+          .style("opacity", 1)
+          .on("end", function() {
+            d3.select(this).remove();
+          });
+      }
+      
+      
 
   svg
     .selectAll("g")
@@ -78,6 +79,7 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top)
           .attr("width", 0)
           .attr("height", 0)
+          .attr("opacity", 0.8)
           .attr("stroke", "white")
           .attr("stroke-width", 2)
           .on("mouseover", function(event, d){
@@ -87,11 +89,19 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
             .attr("x", event.pageX)
             .attr("y", event.pageY - 10)
             .style("opacity", 1);
+            d3.select(this).attr("stroke", "black");
+            d3.select(this).attr("stroke-width", 4);
+            d3.select(this).attr("opacity", 1);
+            d3.select(this.parentNode).raise();
             })
           .on("mouseout", function(event, d){
             resumeTimer();
             tooltip
             .style("opacity", 0);
+            d3.select(this).attr("stroke", "white");
+            d3.select(this).attr("stroke-width", 2);
+            d3.select(this).attr("opacity", 0.8);
+            d3.select(this).style("z-index", "auto");
           })
           .transition()
           .attr("width", WIDTHVIS / 6)
