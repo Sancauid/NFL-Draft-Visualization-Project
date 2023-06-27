@@ -10,10 +10,6 @@ const MARGIN = {
     right: 20,
     left: 40,
   };
-
-let intervalId;
-let kickersPercentages;
-let currentYearIndex;
   
 const HEIGHTVIS = HEIGHT - MARGIN.top - MARGIN.bottom;
 const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
@@ -36,9 +32,12 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       .attr("x", 0)
       .attr("y", HEIGHT / 2 - 50)
 
+  const tooltip = d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
 
-
-    svg.on("click", function() {
+  svg.on("click", function() {
       addFootball();
       });
 
@@ -72,6 +71,7 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
         const G = enter.append("g")
 
         G.append("rect")
+          .data(dataForYear, (d) => d.distance)
           .attr("class", "rectFieldGoal")
           .attr("x", (_, i) => (i % 6) * (WIDTHVIS / 6) + MARGIN.left)
           .attr("y", (_, i) => Math.floor(i / 6) * (HEIGHTVIS / Math.ceil(dataForYear.length / 6)) + MARGIN.top)
@@ -79,8 +79,19 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
           .attr("height", 0)
           .attr("stroke", "white")
           .attr("stroke-width", 2)
-          .on("mouseover", stopTimer)
-          .on("mouseout", resumeTimer)
+          .on("mouseover", function(event, d){
+            stopTimer();
+            tooltip
+            .text("Percentage: " + d.percentage * 100 + "%")
+            .attr("x", event.pageX)
+            .attr("y", event.pageY - 10)
+            .style("opacity", 1);
+            })
+          .on("mouseout", function(event, d){
+            resumeTimer();
+            tooltip
+            .style("opacity", 0);
+          })
           .transition()
           .attr("width", WIDTHVIS / 6)
           .attr("height", HEIGHTVIS / Math.ceil(dataForYear.length / 6))
@@ -154,6 +165,10 @@ function calculateFieldGoalPercentages(data) {
   });
   return results;
 }
+
+let intervalId;
+let kickersPercentages;
+let currentYearIndex;
 
 function stopTimer() {
   clearInterval(intervalId);
