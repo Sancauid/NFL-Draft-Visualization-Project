@@ -217,19 +217,21 @@ function runHeatMap() {
 
 
 function scatterPlotDraft(dataDraftUnfiltered) {
-
   const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
   const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
+  console.log(dataDraftUnfiltered)
+
   const dataDraft = dataDraftUnfiltered.map(d => ({
-      ...d,
-      wAV: d.wAV !== "" ? d.wAV : 0
-    }));
-  
+    ...d,
+    wAV: d.wAV !== "" ? d.wAV : 0
+  }));
 
   const svg = d3.select("#scatterplot")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT);
+    .attr("width", WIDTH + MARGIN.left + MARGIN.right)
+    .attr("height", HEIGHT + MARGIN.top + MARGIN.bottom);
+
+  const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
   const xScale = d3.scaleLinear()
     .domain([0, 260])
@@ -239,38 +241,68 @@ function scatterPlotDraft(dataDraftUnfiltered) {
     .domain([0, d3.max(dataDraft, d => parseInt(d.wAV)) + 5])
     .range([INNER_HEIGHT, MARGIN.top]);
 
-  const xAxis = d3.axisBottom(xScale);
-  const yAxis = d3.axisLeft(yScale);
+  const tooltip = svg.append("g")
+    .attr("class", "tooltip")
+    .style("display", "none");
 
-  svg.append("g")
-    .attr("class", "x-axis")
-    .attr("transform", `translate(0, ${INNER_HEIGHT})`)
-    .call(xAxis);
+  tooltip.append("rect")
+    .attr("width", 240)
+    .attr("height", 110)
+    .attr("rx", 5)
+    .attr("ry", 5)
+    .attr("fill", "white")
+    .style("opacity", 0.9);
 
-  svg.append("g")
-    .attr("class", "y-axis")
-    .attr("transform", `translate(${MARGIN.left}, 0)`)
-    .call(yAxis);
+  tooltip.append("text")
+    .attr("x", 10)
+    .attr("y", 20)
+    .style("font-weight", "bold");
 
-  svg
-    .selectAll("g")
+  tooltip.append("text")
+    .attr("x", 10)
+    .attr("y", 40);
+
+  tooltip.append("text")
+    .attr("x", 10)
+    .attr("y", 60);
+
+  tooltip.append("text")
+    .attr("x", 10)
+    .attr("y", 80);
+
+  tooltip.append("text")
+    .attr("x", 10)
+    .attr("y", 100);
+
+  svg.selectAll("g")
     .data(dataDraft)
     .join(
-
       enter => {
+        const g = enter.append("g");
 
-        const G = enter.append("g")
-
-        G.append("circle")
+        g.append("circle")
           .attr("class", "playerDots")
+          .on("mouseover", (event, d) => {
+            tooltip.style("display", "block");
+            tooltip.select("text").text(`Player: ${d.Player}`);
+            tooltip.select("text:nth-of-type(2)").text(`Position: ${d.Pos}`);
+            tooltip.select("text:nth-of-type(3)").text(`Weighted Avg. Value: ${d.wAV}`);
+            tooltip.select("text:nth-of-type(4)").text(`Team Drafting: ${d.Tm}`);
+            tooltip.select("text:nth-of-type(5)").text(`Pick Number: ${d.Pick}`);
+          })
+          .on("mouseout", () => {
+            tooltip.style("display", "none");
+          })
+          .transition()
+          .duration(200)
           .attr("cx", d => xScale(parseInt(d.Pick)))
-          .attr("cy", d => yScale(d.wAV))
+          .attr("cy", d => yScale(parseInt(d.wAV)))
           .attr("r", 5)
-          .attr("fill", "steelblue");
-          
+          .attr("fill", d => colorScale(d.Pos));
       }
-    )
-  }
+    );
+}
+
 
 
 d3.csv(KICKERS_DATABASE)
