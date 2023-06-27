@@ -220,87 +220,101 @@ function scatterPlotDraft(dataDraftUnfiltered) {
   const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
   const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-  console.log(dataDraftUnfiltered)
-
   const dataDraft = dataDraftUnfiltered.map(d => ({
     ...d,
     wAV: d.wAV !== "" ? d.wAV : 0
   }));
 
-  const svg = d3.select("#scatterplot")
-    .attr("width", WIDTH + MARGIN.left + MARGIN.right)
-    .attr("height", HEIGHT + MARGIN.top + MARGIN.bottom);
+  const svg2 = d3.select("#scatterplot")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT);
 
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
   const xScale = d3.scaleLinear()
-    .domain([0, 260])
+    .domain([0, dataDraft.length])
     .range([MARGIN.left, INNER_WIDTH]);
-
+  
   const yScale = d3.scaleLinear()
     .domain([0, d3.max(dataDraft, d => parseInt(d.wAV)) + 5])
     .range([INNER_HEIGHT, MARGIN.top]);
 
-  const tooltip = svg.append("g")
-    .attr("class", "tooltip")
-    .style("display", "none");
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
+  
+  const textData = ["Player", "Position", "Weighted Avg. Value", "Team Drafting", "Pick Number"];
+  const textYPositions = [20, 40, 60, 80, 100];
 
-  tooltip.append("rect")
-    .attr("width", 240)
-    .attr("height", 110)
-    .attr("rx", 5)
-    .attr("ry", 5)
-    .attr("fill", "white")
-    .style("opacity", 0.9);
-
-  tooltip.append("text")
-    .attr("x", 10)
-    .attr("y", 20)
-    .style("font-weight", "bold");
-
-  tooltip.append("text")
-    .attr("x", 10)
-    .attr("y", 40);
-
-  tooltip.append("text")
-    .attr("x", 10)
-    .attr("y", 60);
-
-  tooltip.append("text")
-    .attr("x", 10)
-    .attr("y", 80);
-
-  tooltip.append("text")
-    .attr("x", 10)
-    .attr("y", 100);
-
-  svg.selectAll("g")
+  svg2
+    .selectAll("g")
     .data(dataDraft)
-    .join(
-      enter => {
-        const g = enter.append("g");
+    .join(enter => {
+        
+      const G = enter.append("g");
 
-        g.append("circle")
-          .attr("class", "playerDots")
-          .on("mouseover", (event, d) => {
-            tooltip.style("display", "block");
-            tooltip.select("text").text(`Player: ${d.Player}`);
-            tooltip.select("text:nth-of-type(2)").text(`Position: ${d.Pos}`);
-            tooltip.select("text:nth-of-type(3)").text(`Weighted Avg. Value: ${d.wAV}`);
-            tooltip.select("text:nth-of-type(4)").text(`Team Drafting: ${d.Tm}`);
-            tooltip.select("text:nth-of-type(5)").text(`Pick Number: ${d.Pick}`);
-          })
-          .on("mouseout", () => {
-            tooltip.style("display", "none");
-          })
-          .transition()
-          .duration(200)
-          .attr("cx", d => xScale(parseInt(d.Pick)))
-          .attr("cy", d => yScale(parseInt(d.wAV)))
-          .attr("r", 5)
-          .attr("fill", d => colorScale(d.Pos));
-      }
-    );
+      G.append("circle")
+        .data(dataDraft)
+        .attr("class", "playerDots")
+        .attr("cx", d => xScale(d.Pick))
+        .attr("cy", d => yScale(parseInt(d.wAV)))
+        .attr("r", 5)
+        .attr("fill", d => colorScale(d.Pos))
+        .on("mouseover", (event, d) => {
+          tooltip.style("display", "block")
+
+          tooltip.selectAll("text")
+            .text((text, index) => {
+              switch (index) {
+                case 0:
+                  return `Player: ${d.Player}`;
+                case 1:
+                  return `Position: ${d.Pos}`;
+                case 2:
+                  return `Weighted Avg. Value: ${d.wAV}`;
+                case 3:
+                  return `Team Drafting: ${d.Tm}`;
+                case 4:
+                  return `Pick Number: ${d.Pick}`;
+                default:
+                  return "";
+              }
+            });
+        })
+        .on("mouseout", () => {
+          tooltip.style("display", "none");
+        });
+
+      enter.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0, ${INNER_HEIGHT})`)
+        .call(xAxis);
+
+      enter.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", `translate(${MARGIN.left}, 0)`)
+        .call(yAxis);
+
+      const tooltip = enter
+        .append("g")
+        .attr("class", "tooltip")
+        .style("display", "none");
+
+      tooltip.append("rect")
+        .attr("width", 240)
+        .attr("height", 110)
+        .attr("x", 60)
+        .attr("y", 60)
+        .attr("fill", "white")
+        .attr("stroke", "black");
+
+      tooltip.selectAll("text")
+        .data(textData)
+        .enter()
+        .append("text")
+        .attr("x", 70)
+        .attr("y", (d, i) => textYPositions[i] + 60)
+        .text(d => d);
+    });
 }
 
 
