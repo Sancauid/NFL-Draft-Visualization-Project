@@ -17,43 +17,6 @@ const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
 const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
 const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-const svg2 = d3.select("#scatterplot")
-.attr("width", WIDTH)
-.attr("height", HEIGHT - 80)
-.call(d3.zoom()
-  .scaleExtent([1, 20])
-  .translateExtent([[0, 0], [WIDTH, HEIGHT]])
-  .on("zoom", handleZoom));
-
-function handleZoom(event) {
-    const transform = event.transform;
-  
-    const adjustedInnerWidth = INNER_WIDTH - 100; // Reduce 50 pixels from each side
-    const adjustedInnerHeight = INNER_HEIGHT - 80; // Reduce 80 pixels from the bottom
-  
-    // Update the circle positions
-    svg2.selectAll(".playerDots")
-      .attr("transform", transform)
-      .attr("cx", d => {
-        const x = transform.applyX(xScale(d.Pick));
-        return Math.max(MARGIN.left, Math.min(MARGIN.left + adjustedInnerWidth, x));
-      })
-      .attr("cy", d => {
-        const y = transform.applyY(yScale(parseInt(d.wAV)));
-        return Math.max(MARGIN.top, Math.min(MARGIN.top + adjustedInnerHeight, y));
-      });
-
-    svg2.selectAll(".x-axis")
-      .transition()
-      .duration(200)
-      .call(xAxis.scale(transform.rescaleX(xScale)));
-
-    svg2.selectAll(".y-axis")
-      .transition()
-      .duration(200)
-      .call(yAxis.scale(transform.rescaleY(yScale)));
-  }
-
 const svg3 = d3.select("#bubbleplot")
     .attr("width", WIDTH)
     .attr("height", HEIGHT - 60);
@@ -257,7 +220,41 @@ function runHeatMap() {
   heatMapKickers(kickersPercentages, currentYearIndex);
 }
 
+
 function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
+
+  
+  const zoom = d3.zoom()
+    .scaleExtent([1, 20])
+    .translateExtent([[0, 0], [WIDTH, HEIGHT]])
+    .on("zoom", handleZoom);
+  
+  const svg2 = d3.select("#scatterplot")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT - 40)
+    .call(zoom);
+
+  
+  function handleZoom(event) {
+      
+    const transform = event.transform;
+
+    svg2.selectAll(".playerDots")
+      .transition()
+      .duration(200)
+      .attr("transform", transform);
+
+    svg2.selectAll(".x-axis")
+      .transition()
+      .duration(200)
+      .call(xAxis.scale(transform.rescaleX(xScale)));
+
+    svg2.selectAll(".y-axis")
+      .transition()
+      .duration(200)
+      .call(yAxis.scale(transform.rescaleY(yScale)));
+  }
+
 
   const dataDraft = dataDraftUnfiltered.map(d => ({
     ...d,
@@ -322,6 +319,24 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
             tooltip.style("display", "none");
           });
 
+        G.append("text")
+          .attr("class", "x-axis-label")
+          .attr("x", WIDTH / 2)
+          .attr("y", HEIGHT - MARGIN.bottom)
+          .attr("text-anchor", "middle")
+          .style("fill", "black")
+          .style("background-color", "rgba(255, 255, 255, 0.8)")
+          .text("Pick Number");
+
+        G.append("text")
+          .attr("class", "y-axis-label")
+          .attr("x", 80)
+          .attr("y", 30)
+          .attr("text-anchor", "middle")
+          .style("fill", "black")
+          .style("background-color", "rgba(255, 255, 255, 0.8)")
+          .text("Weighted Avg. Value");
+
         enter.append("g")
           .attr("class", "x-axis")
           .attr("transform", `translate(0, ${INNER_HEIGHT})`)
@@ -340,8 +355,8 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
         tooltip.append("rect")
           .attr("width", 240)
           .attr("height", 110)
-          .attr("x", 60)
-          .attr("y", 60)
+          .attr("x", 90)
+          .attr("y", 50)
           .attr("fill", "white")
           .attr("stroke", "black");
 
@@ -349,8 +364,8 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .data(textData)
           .enter()
           .append("text")
-          .attr("x", 70)
-          .attr("y", (d, i) => textYPositions[i] + 60)
+          .attr("x", 100)
+          .attr("y", (d, i) => textYPositions[i] + 50)
           .text(d => d);
 
         const legend = enter
