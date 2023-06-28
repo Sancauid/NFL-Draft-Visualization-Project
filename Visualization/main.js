@@ -221,9 +221,9 @@ function runHeatMap() {
 }
 
 
+
 function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
-  
   const zoom = d3.zoom()
     .scaleExtent([1, 20])
     .translateExtent([[0, 0], [WIDTH, HEIGHT]])
@@ -234,7 +234,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
     .attr("height", HEIGHT - 40)
     .call(zoom);
 
-  
   function handleZoom(event) {
       
     const transform = event.transform;
@@ -245,31 +244,31 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
       .attr("transform", transform);
 
     svg2.selectAll(".x-axis")
-      .transition()
-      .duration(200)
       .call(xAxis.scale(transform.rescaleX(xScale)));
 
     svg2.selectAll(".y-axis")
-      .transition()
-      .duration(200)
       .call(yAxis.scale(transform.rescaleY(yScale)));
   }
 
 
-  const dataDraft = dataDraftUnfiltered.map(d => ({
+  const dataDraft = dataDraftUnfiltered
+  .filter(d => filtroEquipo === false || d.Tm === filtroEquipo)
+  .map(d => ({
     ...d,
     wAV: d.wAV !== "" ? d.wAV : 0
   }));
+
+  console.log(dataDraft)
       
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
     .range(d3.schemeCategory10.concat(["#FF0010", "#10FF00", "#0012FF", "#FF00FF"]));
 
   const xScale = d3.scaleLinear()
-    .domain([0, dataDraft.length])
+    .domain([0, 254])
     .range([MARGIN.left, INNER_WIDTH]);
   
   const yScale = d3.scaleLinear()
-    .domain([0, d3.max(dataDraft, d => parseInt(d.wAV)) + 5])
+    .domain([0, 190])
     .range([INNER_HEIGHT, MARGIN.top]);
 
   const xAxis = d3.axisBottom(xScale);
@@ -282,7 +281,7 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
   svg2
     .selectAll("g")
-    .data(dataDraft)
+    .data(dataDraft, d => d.Pick)
     .join(
       enter => {
         const G = enter.append("g");
@@ -394,26 +393,28 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
       },
       update => {
-        update.select(".x-axis")
-          .call(xAxis);
 
-        update.select(".y-axis")
-          .call(yAxis);
+        update.selectAll(".playerDots")
+          .data(dataDraft, d => d.Pick)
+
+          return update
+
       }, 
       exit => { 
-        exit
-          .select(".x-axis")
+
+        exit.selectAll(".playerDots")
+          .data(dataDraft, d => d.Pick)
+          .exit()
           .remove();
 
-        exit
-          .select(".y-axis")
-          .remove();
+        return exit
+
       }
     );
 
 }
 
-function bubblePlotTeams(dataTeams) {
+function bubblePlotTeams(dataTeams, draft) {
 
   console.log(dataTeams);
 
@@ -484,7 +485,7 @@ function bubblePlotTeams(dataTeams) {
           .attr("r", d => widthScale(parseFloat(d.YearsActive)) / 15)
           .attr("fill", d => colorScale(d.Tm))
           .on("click", (event, d) => {
-            console.log(d.Tm);
+            scatterPlotDraft(draft, d.Tm)
           })
           .append("title")
           .text(d => `${d.Tm}\nWinning Percentage: ${d.WLPer}\nwAV Draft Value: ${d.wAVSum}\nYears Active: ${d.YearsActive}`);
@@ -569,7 +570,7 @@ d3.csv(DRAFT_DATABASE)
     d3.csv(DRAFT_DATABASE)
     .then((draft) => {
       teamsWithWav = addTeamInfoToDraftArray(updatedTeams, draft)
-      bubblePlotTeams(teamsWithWav);
+      bubblePlotTeams(teamsWithWav, draft);
     })
     .catch((error) => console.log(error));
   })

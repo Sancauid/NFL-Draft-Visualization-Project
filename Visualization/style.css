@@ -10,13 +10,24 @@ body {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    padding: auto;
+    margin: 10px;
 }
 
-.row {
+.row2 {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
     padding: auto;
+    margin: 10px;
+}
+
+.row3 {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: auto;
+    margin: 10px;
 }
 
 .columns {
