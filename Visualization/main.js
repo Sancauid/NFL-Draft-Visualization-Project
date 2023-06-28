@@ -331,9 +331,9 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
         
         update.selectAll(".playerDots")
           .data(dataDraft, d => d.Pick)
-          .style("opacity", d => (filtroEquipo === false || d.Tm === filtroEquipo) ? 1 : 0)
+          .style("opacity", d => (filtroEquipo === false || d.Tm === filtroEquipo || d.Pos == filtroEquipo) ? 1 : 0)
           .each(function(d) {
-            if (filtroEquipo === false || d.Tm === filtroEquipo) {
+            if (filtroEquipo === false || d.Tm === filtroEquipo || d.Pos == filtroEquipo) {
               d3.select(this).style("display", "block");
             } else {
               d3.select(this).style("display", "none");
@@ -556,6 +556,7 @@ d3.csv(DRAFT_DATABASE)
     .then((draft) => {
       draftData = draft;
       scatterPlotDraft(draft, false)
+      preprocess();
   })
   .catch((error) => console.log(error));
 
@@ -576,3 +577,28 @@ d3.csv(DRAFT_DATABASE)
   })
   .catch((error) => console.log(error));
 
+
+const dropdownMenu = document.getElementById("dropdownMenu");
+
+function preprocess() {
+    const noneOption = document.createElement("option");
+    noneOption.text = "No Filter";
+    dropdownMenu.add(noneOption);
+    legendData = Array.from(new Set(draftData.map(d => d.Pos)));
+    legendData.forEach(option => {
+    const optionElement = document.createElement("option");
+    optionElement.text = option;
+    dropdownMenu.add(optionElement);
+  });
+
+}
+
+dropdownMenu.addEventListener("change", () => {
+  const selectedOption = dropdownMenu.value;
+  if (selectedOption === "No Filter") {
+      scatterPlotDraft(draftData, false)
+  }
+  else {
+    scatterPlotDraft(draftData, selectedOption)
+  }
+});
