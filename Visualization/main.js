@@ -17,6 +17,33 @@ const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
 const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
 const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
+const svg2 = d3.select("#scatterplot")
+.attr("width", WIDTH)
+.attr("height", HEIGHT)
+.call(d3.zoom()
+  .scaleExtent([1, 20])
+  .translateExtent([[0, 0], [WIDTH, HEIGHT]])
+  .on("zoom", handleZoom));
+
+function handleZoom(event) {
+    const transform = event.transform;
+  
+    svg2.selectAll(".playerDots")
+      .transition()
+      .duration(200)
+      .attr("transform", transform);
+
+    svg2.selectAll(".x-axis")
+      .transition()
+      .duration(200)
+      .call(xAxis.scale(transform.rescaleX(xScale)));
+
+    svg2.selectAll(".y-axis")
+      .transition()
+      .duration(200)
+      .call(yAxis.scale(transform.rescaleY(yScale)));
+  }
+
 function heatMapKickers(kickersPercentages, currentYearIndex) {
 
   const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
@@ -222,14 +249,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
     ...d,
     wAV: d.wAV !== "" ? d.wAV : 0
   }));
-
-  const svg2 = d3.select("#scatterplot")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT)
-    .call(d3.zoom()
-      .scaleExtent([1, 20])
-      .translateExtent([[0, 0], [WIDTH, HEIGHT]])
-      .on("zoom", handleZoom));
       
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
     .range(d3.schemeCategory10.concat(["#FF0010", "#10FF00", "#0012FF", "#FF00FF"]));
@@ -363,24 +382,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
       }
     );
 
-  function handleZoom(event) {
-    const transform = event.transform;
-  
-    svg2.selectAll(".playerDots")
-      .transition()
-      .duration(200)
-      .attr("transform", transform);
-
-    svg2.selectAll(".x-axis")
-      .transition()
-      .duration(200)
-      .call(xAxis.scale(transform.rescaleX(xScale)));
-
-    svg2.selectAll(".y-axis")
-      .transition()
-      .duration(200)
-      .call(yAxis.scale(transform.rescaleY(yScale)));
-  }
 }
 
 function bubblePlotTeams(dataTeams) {
