@@ -209,16 +209,11 @@ const svg2 = d3.select("#scatterplot")
 
 function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
-  const dataDraft = dataDraftUnfiltered
-
-  .filter(d => filtroEquipo === false || d.Tm === filtroEquipo)
-  .map(d => ({
+  const dataDraft = dataDraftUnfiltered.map(d => ({
     ...d,
     wAV: d.wAV !== "" ? d.wAV : 0
   }));
-
-  console.log(dataDraft)
-
+  
   const xScale = d3.scaleLinear()
     .domain([0, 254])
     .range([MARGIN.left, INNER_WIDTH]);
@@ -233,7 +228,8 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
   const textData = ["Player", "Position", "Weighted Avg. Value", "Team Drafting", "Pick Number"];
   const textYPositions = [20, 40, 60, 80, 100];
 
-  const legendData = Array.from(new Set(dataDraft.map(d => d.Pos)));
+  console.log(dataDraft)
+  console.log(filtroEquipo)
 
   svg2
     .selectAll("g")
@@ -310,6 +306,7 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .style("display", "none");
 
         tooltip.append("rect")
+          .attr("class", "tooltipRect")
           .attr("width", 240)
           .attr("height", 110)
           .attr("x", 90)
@@ -318,6 +315,7 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .attr("stroke", "black");
 
         tooltip.selectAll("text")
+          .attr("class", "tooltipText")
           .data(textData)
           .enter()
           .append("text")
@@ -325,57 +323,33 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .attr("y", (d, i) => textYPositions[i] + 50)
           .text(d => d);
 
-        const legend = enter
-          .append("g")
-          .attr("class", "legend")
-          .attr("transform", `translate(${INNER_WIDTH}, 20)`);
-
-        legend.selectAll("rect")
-          .data(legendData)
-          .append("rect")
-          .attr("x", 0)
-          .attr("y", (d, i) => i * 20)
-          .attr("width", 10)
-          .attr("height", 10)
-          .attr("fill", d => colorScale(d));
-
-        legend.selectAll("text")
-          .data(legendData)
-          .append("text")
-          .attr("x", 15)
-          .attr("y", (d, i) => i * 20 + 9)
-          .text(d => d)
-          .style("font-size", "10px");
-
-          return enter;
+        return G;
 
       },
 
       update => {
         
         update.selectAll(".playerDots")
-        .data(dataDraft, d => d.Pick)
-        .attr("cx", d => xScale(d.Pick))
-        .attr("cy", d => yScale(parseInt(d.wAV)))
-        .attr("fill", d => colorScale(d.Pos))
-        .style("opacity", d => (filtroEquipo === false || d.Tm === filtroEquipo) ? 1 : 0);
+          .data(dataDraft, d => d.Pick)
+          .style("opacity", d => (filtroEquipo === false || d.Tm === filtroEquipo) ? 1 : 0)
+          .each(function(d) {
+            if (filtroEquipo === false || d.Tm === filtroEquipo) {
+              d3.select(this).style("display", "block");
+            } else {
+              d3.select(this).style("display", "none");
+            }
+          });
 
-        update.selectAll(".x-axis")
-        .attr("transform", `translate(0, ${INNER_HEIGHT})`)
-        .call(xAxis);
-
-        update.selectAll(".y-axis")
-        .attr("transform", `translate(${MARGIN.left}, 0)`)
-        .call(yAxis);
             
       return update;
 
       },
       exit => {
 
-        exit.remove()
-
-        return exit
+        exit.selectAll(".playerDots")
+        .remove();
+      
+      return exit;
     }
     );
 
@@ -404,11 +378,10 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
   svg2.on("click", () => {
     scatterPlotDraft(dataDraftUnfiltered, false);
-    bubblePlotTeams(dataTeams, draft)
+    bubblePlotTeams(teamsWithWav, draftData);
     });
 
 }
-
 
 function bubblePlotTeams(dataTeams, draft) {
 
@@ -524,9 +497,30 @@ function bubblePlotTeams(dataTeams, draft) {
           .style("fill", "black")
           .style("background-color", "rgba(255, 255, 255, 0.8)")
           .text("Win-Loss Percentage");
+      },
+
+      update => {
+
+        update.selectAll(".teamBubbles")
+          .attr("stroke", "none")
+          .attr("opacity", "1")
+        
+
+        return update;
+
+      },
+
+      exit => {
+
+        exit.selectAll(".teamBubbles")
+        .remove();
+
+        return exit;
       }
     );
 }
+
+let draftData;
 
 function addTeamInfoToDraftArray(teamsArray, draftArray) {
   const wAVSumByTeam = teamsArray.reduce((acc, team) => {
@@ -560,6 +554,7 @@ d3.csv(KICKERS_DATABASE)
 
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
+      draftData = draft;
       scatterPlotDraft(draft, false)
   })
   .catch((error) => console.log(error));
