@@ -1,6 +1,6 @@
 DRAFT_DATABASE = "https://gist.githubusercontent.com/kunafuego/106a696e84cbd056e4e2c6a2cc6e8387/raw/db12d21344c086a6e1c6a4e8b769e086e62043bf/draft.csv";
 KICKERS_DATABASE = "https://gist.githubusercontent.com/Sancauid/aee1813abb6fa4021006d6e5730ceac3/raw/74b87d4d8e9177b8987447d8009e089448c98e4c/kickers.csv";
-TEAMS_DATABASE = "https://gist.githubusercontent.com/Sancauid/c79a546a512ab67dfcf6a2c61923c8e7/raw/bae0ea68036f0c62f573d9ee170828c93147e7a5/teams.csv";
+TEAMS_DATABASE = "https://gist.githubusercontent.com/Sancauid/c79a546a512ab67dfcf6a2c61923c8e7/raw/6b131735607d1930c55d6d23eb773c4b509d709e/teams.csv";
 
 const WIDTH = 1200;
 const HEIGHT = 600;
@@ -14,6 +14,8 @@ const MARGIN = {
   
 const HEIGHTVIS = HEIGHT - MARGIN.top - MARGIN.bottom;
 const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
+const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
+const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
 
 function heatMapKickers(kickersPercentages, currentYearIndex) {
@@ -216,8 +218,6 @@ function runHeatMap() {
 }
 
 function scatterPlotDraft(dataDraftUnfiltered) {
-  const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
-  const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
   const dataDraft = dataDraftUnfiltered.map(d => ({
     ...d,
@@ -388,15 +388,20 @@ function bubblePlotTeams(dataTeams) {
 
   console.log(dataTeams)
 
-  const data = [
-    { name: "A", value: 10, radius: 20 },
-    { name: "B", value: 20, radius: 30 },
-    { name: "C", value: 15, radius: 25 },
-  ];
-
   const svg3 = d3.select("#bubbleplot")
     .attr("width", WIDTH)
     .attr("height", HEIGHT);
+
+  const xScale = d3.scaleLinear()
+    .domain([0, d3.max(dataTeams, d => parseInt(d.W) + 100)])
+    .range([MARGIN.left, INNER_WIDTH]);
+  
+  const yScale = d3.scaleLinear()
+    .domain([d3.min(dataTeams, d => parseFloat(d.WLPer) - 0.1), d3.max(dataTeams, d => parseFloat(d.WLPer) + 0.1)])
+    .range([INNER_HEIGHT, MARGIN.top]);
+
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yScale);
 
   svg3
     .selectAll("g")
@@ -409,35 +414,23 @@ function bubblePlotTeams(dataTeams) {
         G.append("circle")
           .data(dataTeams)
           .attr("class", "teamBubbles")
-          .attr("cx", d => xScale(d.W))
-          .attr("cy", d => yScale(parseInt(d.W-L%)))
-          .attr("r", 5)
-          .attr("fill", d => colorScale(d.Pos))
+          .attr("cx", d => xScale(parseInt(d.W)))
+          .attr("cy", d => yScale(parseFloat(d.WLPer)))
+          .attr("r", 15)
+          .attr("fill", "red")
+
+        enter.append("g")
+          .attr("class", "x-axis")
+          .attr("transform", `translate(0, ${INNER_HEIGHT})`)
+          .call(xAxis);
+
+        enter.append("g")
+          .attr("class", "y-axis")
+          .attr("transform", `translate(${MARGIN.left}, 0)`)
+          .call(yAxis);
 
       }
     );
-
-
-  const bubbles = svg3.selectAll(".bubble")
-    .data(data)
-    .enter()
-    .append("circle")
-    .attr("class", "bubble")
-    .attr("cx", (d, i) => (i + 1) * (WIDTH / (data.length + 1)))
-    .attr("cy", HEIGHT / 2)
-    .attr("r", (d) => d.radius);
-
-
-  const labels = svg3.selectAll(".label")
-    .data(data)
-    .enter()
-    .append("text")
-    .attr("class", "label")
-    .attr("x", (d, i) => (i + 1) * (WIDTH / (data.length + 1)))
-    .attr("y", HEIGHT / 2)
-    .attr("text-anchor", "middle")
-    .attr("dy", 5)
-    .text((d) => d.name);
 
 }
 
