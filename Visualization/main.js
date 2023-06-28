@@ -1,5 +1,6 @@
 DRAFT_DATABASE = "https://gist.githubusercontent.com/kunafuego/106a696e84cbd056e4e2c6a2cc6e8387/raw/db12d21344c086a6e1c6a4e8b769e086e62043bf/draft.csv";
 KICKERS_DATABASE = "https://gist.githubusercontent.com/Sancauid/aee1813abb6fa4021006d6e5730ceac3/raw/74b87d4d8e9177b8987447d8009e089448c98e4c/kickers.csv";
+TEAMS_DATABASE = "https://gist.githubusercontent.com/Sancauid/c79a546a512ab67dfcf6a2c61923c8e7/raw/bae0ea68036f0c62f573d9ee170828c93147e7a5/teams.csv";
 
 const WIDTH = 1200;
 const HEIGHT = 600;
@@ -383,7 +384,62 @@ function scatterPlotDraft(dataDraftUnfiltered) {
   }
 }
 
+function bubblePlotTeams(dataTeams) {
 
+  console.log(dataTeams)
+
+  const data = [
+    { name: "A", value: 10, radius: 20 },
+    { name: "B", value: 20, radius: 30 },
+    { name: "C", value: 15, radius: 25 },
+  ];
+
+  const svg3 = d3.select("#bubbleplot")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT);
+
+  svg3
+    .selectAll("g")
+    .data(dataTeams)
+    .join(
+      enter => {
+
+        const G = enter.append("g");
+
+        G.append("circle")
+          .data(dataTeams)
+          .attr("class", "teamBubbles")
+          .attr("cx", d => xScale(d.W))
+          .attr("cy", d => yScale(parseInt(d.W-L%)))
+          .attr("r", 5)
+          .attr("fill", d => colorScale(d.Pos))
+
+      }
+    );
+
+
+  const bubbles = svg3.selectAll(".bubble")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("class", "bubble")
+    .attr("cx", (d, i) => (i + 1) * (WIDTH / (data.length + 1)))
+    .attr("cy", HEIGHT / 2)
+    .attr("r", (d) => d.radius);
+
+
+  const labels = svg3.selectAll(".label")
+    .data(data)
+    .enter()
+    .append("text")
+    .attr("class", "label")
+    .attr("x", (d, i) => (i + 1) * (WIDTH / (data.length + 1)))
+    .attr("y", HEIGHT / 2)
+    .attr("text-anchor", "middle")
+    .attr("dy", 5)
+    .text((d) => d.name);
+
+}
 
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
@@ -398,3 +454,9 @@ d3.csv(DRAFT_DATABASE)
       scatterPlotDraft(draft)
   })
   .catch((error) => console.log(error));
+
+d3.csv(TEAMS_DATABASE)
+  .then((teams) => {
+    bubblePlotTeams(teams)
+})
+.catch((error) => console.log(error));
