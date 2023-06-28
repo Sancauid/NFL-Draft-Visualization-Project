@@ -209,35 +209,8 @@ const svg2 = d3.select("#scatterplot")
 
 function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
-  const zoom = d3.zoom()
-    .scaleExtent([1, 20])
-    .translateExtent([[0, 0], [WIDTH, HEIGHT]])
-    .on("zoom", handleZoom);
-
-  svg2.call(zoom);
-
-  function handleZoom(event) {
-      
-    const transform = event.transform;
-
-    svg2.selectAll(".playerDots")
-      .transition()
-      .duration(200)
-      .attr("transform", transform);
-
-    svg2.selectAll(".x-axis")
-      .call(xAxis.scale(transform.rescaleX(xScale)));
-
-    svg2.selectAll(".y-axis")
-      .call(yAxis.scale(transform.rescaleY(yScale)));
-  }
-
-  svg2.on("click", () => {
-    scatterPlotDraft(dataDraftUnfiltered, false);
-    bubblePlotTeams(dataTeams, draft)
-    });
-
   const dataDraft = dataDraftUnfiltered
+
   .filter(d => filtroEquipo === false || d.Tm === filtroEquipo)
   .map(d => ({
     ...d,
@@ -359,7 +332,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
         legend.selectAll("rect")
           .data(legendData)
-          .enter()
           .append("rect")
           .attr("x", 0)
           .attr("y", (d, i) => i * 20)
@@ -369,12 +341,13 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
         legend.selectAll("text")
           .data(legendData)
-          .enter()
           .append("text")
           .attr("x", 15)
           .attr("y", (d, i) => i * 20 + 9)
           .text(d => d)
           .style("font-size", "10px");
+
+          return enter;
 
       },
 
@@ -397,8 +370,43 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
             
       return update;
 
-      }
+      },
+      exit => {
+
+        exit.remove()
+
+        return exit
+    }
     );
+
+  const zoom = d3.zoom()
+    .scaleExtent([1, 20])
+    .translateExtent([[0, 0], [WIDTH, HEIGHT]])
+    .on("zoom", handleZoom);
+
+  svg2.call(zoom);
+
+  function handleZoom(event) {
+      
+    const transform = event.transform;
+
+    svg2.selectAll(".playerDots")
+      .transition()
+      .duration(200)
+      .attr("transform", transform);
+
+    svg2.selectAll(".x-axis")
+      .call(xAxis.scale(transform.rescaleX(xScale)));
+
+    svg2.selectAll(".y-axis")
+      .call(yAxis.scale(transform.rescaleY(yScale)));
+  }
+
+  svg2.on("click", () => {
+    scatterPlotDraft(dataDraftUnfiltered, false);
+    bubblePlotTeams(dataTeams, draft)
+    });
+
 }
 
 
