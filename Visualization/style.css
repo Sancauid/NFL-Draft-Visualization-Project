@@ -12,13 +12,23 @@ body {
     flex-wrap: wrap;
 }
 
-.column {
+.row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: auto;
+}
+
+.columns {
     display: block;
     padding: 10px;
-    margin: 10px;
-    width: 500px;
 }
 
 .tooltip text {
     font-weight: normal;
   }
+
+svg {
+    border: 1px solid gray;
+    margin-top: 10px;
+}

@@ -19,7 +19,7 @@ const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
 const svg2 = d3.select("#scatterplot")
 .attr("width", WIDTH)
-.attr("height", HEIGHT)
+.attr("height", HEIGHT - 80)
 .call(d3.zoom()
   .scaleExtent([1, 20])
   .translateExtent([[0, 0], [WIDTH, HEIGHT]])
@@ -28,10 +28,20 @@ const svg2 = d3.select("#scatterplot")
 function handleZoom(event) {
     const transform = event.transform;
   
+    const adjustedInnerWidth = INNER_WIDTH - 100; // Reduce 50 pixels from each side
+    const adjustedInnerHeight = INNER_HEIGHT - 80; // Reduce 80 pixels from the bottom
+  
+    // Update the circle positions
     svg2.selectAll(".playerDots")
-      .transition()
-      .duration(200)
-      .attr("transform", transform);
+      .attr("transform", transform)
+      .attr("cx", d => {
+        const x = transform.applyX(xScale(d.Pick));
+        return Math.max(MARGIN.left, Math.min(MARGIN.left + adjustedInnerWidth, x));
+      })
+      .attr("cy", d => {
+        const y = transform.applyY(yScale(parseInt(d.wAV)));
+        return Math.max(MARGIN.top, Math.min(MARGIN.top + adjustedInnerHeight, y));
+      });
 
     svg2.selectAll(".x-axis")
       .transition()
@@ -43,6 +53,10 @@ function handleZoom(event) {
       .duration(200)
       .call(yAxis.scale(transform.rescaleY(yScale)));
   }
+
+const svg3 = d3.select("#bubbleplot")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT - 60);
 
 function heatMapKickers(kickersPercentages, currentYearIndex) {
 
@@ -387,10 +401,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 function bubblePlotTeams(dataTeams) {
 
   console.log(dataTeams);
-
-  const svg3 = d3.select("#bubbleplot")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT);
 
   const colorScale = d3.scaleOrdinal()
     .domain(dataTeams.map(d => d.Tm))
