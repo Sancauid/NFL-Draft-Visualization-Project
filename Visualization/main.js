@@ -367,10 +367,19 @@ function scatterPlotDraft(dataDraftUnfiltered) {
     const transform = event.transform;
   
     svg2.selectAll(".playerDots")
-        .attr("transform", transform);
-  
-    xAxisGroup.call(xAxis.scale(transform.rescaleX(xScale)));
-    yAxisGroup.call(yAxis.scale(transform.rescaleY(yScale)));
+      .transition()
+      .duration(200)
+      .attr("transform", transform);
+
+    svg2.selectAll(".x-axis")
+      .transition()
+      .duration(200)
+      .call(xAxis.scale(transform.rescaleX(xScale)));
+
+    svg2.selectAll(".y-axis")
+      .transition()
+      .duration(200)
+      .call(yAxis.scale(transform.rescaleY(yScale)));
   }
 }
 
