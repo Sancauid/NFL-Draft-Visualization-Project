@@ -17,10 +17,6 @@ const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
 const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
 const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-let draftPlayer;
-let kickers;
-let teams;
-
 function heatMapKickers(kickersPercentages, currentYearIndex) {
 
   const dataForYear = kickersPercentages[currentYearIndex].fieldGoalPercentages;
@@ -220,7 +216,7 @@ function runHeatMap() {
   heatMapKickers(kickersPercentages, currentYearIndex);
 }
 
-function scatterPlotDraft(dataDraftUnfiltered) {
+function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
   const dataDraft = dataDraftUnfiltered.map(d => ({
     ...d,
@@ -433,11 +429,11 @@ function bubblePlotTeams(dataTeams) {
     ]);
 
   const xScale = d3.scaleLinear()
-    .domain([0, d3.max(dataTeams, d => parseInt(d.W) + 100)])
+    .domain([-10, d3.max(dataTeams, d => parseInt(d.wAVSum) + 20)])
     .range([MARGIN.left, INNER_WIDTH]);
   
   const yScale = d3.scaleLinear()
-    .domain([d3.min(dataTeams, d => parseFloat(d.WLPer) - 0.1), d3.max(dataTeams, d => parseFloat(d.WLPer) + 0.1)])
+    .domain([d3.min(dataTeams, d => parseFloat(d.WLPer)) - 0.05, d3.max(dataTeams, d => parseFloat(d.WLPer))])
     .range([INNER_HEIGHT, MARGIN.top]);
 
   const widthScale = d3.scaleLinear()
@@ -452,14 +448,21 @@ function bubblePlotTeams(dataTeams) {
     .data(dataTeams)
     .join(
       enter => {
+
         const G = enter.append("g");
 
         G.append("circle")
           .attr("class", "teamBubbles")
-          .attr("cx", d => xScale(parseInt(d.W)))
+          .attr("cx", d => xScale(parseInt(d.wAVSum)))
           .attr("cy", d => yScale(parseFloat(d.WLPer)))
           .attr("r", d => widthScale(parseFloat(d.YearsActive)) / 15)
-          .attr("fill", d => colorScale(d.Tm));
+          .attr("fill", d => colorScale(d.Tm))
+          .on("click", (event, d) => {
+            console.log(d.Tm);
+          })
+          .append("title")
+          .text(d => `${d.Tm}\nWinning Percentage: ${d.WLPer}\nwAV Draft Value: ${d.wAVSum}\nYears Active: ${d.YearsActive}`);
+                      
 
         enter.append("g")
           .attr("class", "x-axis")
@@ -474,6 +477,27 @@ function bubblePlotTeams(dataTeams) {
     );
 }
 
+function addTeamInfoToDraftArray(teamsArray, draftArray) {
+  const wAVSumByTeam = teamsArray.reduce((acc, team) => {
+    const teamName = team.Tm;
+    const wAVSum = draftArray
+      .filter(player => player.Tm === teamName)
+      .reduce((sum, player) => sum + (isNaN(parseInt(player.wAV)) ? 0 : parseInt(player.wAV)), 0);
+    return acc.set(teamName, wAVSum);
+  }, new Map());
+
+  const teamsSet = new Set(teamsArray.map(team => team.Tm));
+
+  teamsSet.forEach(teamName => {
+    const wAVSum = wAVSumByTeam.get(teamName) || 0;
+    const team = teamsArray.find(team => team.Tm === teamName);
+    if (team) {
+      team.wAVSum = wAVSum.toString();
+    }
+  });
+
+  return teamsArray;
+}
 
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
@@ -486,21 +510,24 @@ d3.csv(KICKERS_DATABASE)
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
       draftPlayer = draft
-      scatterPlotDraft(draft)
+      scatterPlotDraft(draft, false)
   })
   .catch((error) => console.log(error));
 
   d3.csv(TEAMS_DATABASE)
   .then((teams) => {
-    const updatedTeams = teams.map((team) => {
+      const updatedTeams = teams.map((team) => {
       const fromYear = parseInt(team.From);
       const toYear = parseInt(team.To);
       const yearsActive = toYear - fromYear + 1;
-
       return { ...team, YearsActive: yearsActive.toString() };
     });
-
-    bubblePlotTeams(updatedTeams);
+    d3.csv(DRAFT_DATABASE)
+    .then((draft) => {
+      teamsWithWav = addTeamInfoToDraftArray(updatedTeams, draft)
+      bubblePlotTeams(teamsWithWav);
+    })
+    .catch((error) => console.log(error));
   })
   .catch((error) => console.log(error));
 
