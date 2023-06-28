@@ -19,7 +19,7 @@ const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
 const svg3 = d3.select("#bubbleplot")
     .attr("width", WIDTH)
-    .attr("height", HEIGHT - 60);
+    .attr("height", HEIGHT - 40);
 
 function heatMapKickers(kickersPercentages, currentYearIndex) {
 
@@ -499,6 +499,24 @@ function bubblePlotTeams(dataTeams) {
           .attr("class", "y-axis")
           .attr("transform", `translate(${MARGIN.left}, 0)`)
           .call(yAxis);
+
+        G.append("text")
+          .attr("class", "x-axis-label")
+          .attr("x", WIDTH / 2)
+          .attr("y", HEIGHT - MARGIN.bottom)
+          .attr("text-anchor", "middle")
+          .style("fill", "black")
+          .style("background-color", "rgba(255, 255, 255, 0.8)")
+          .text("wAV Acquired 2000 Draft");
+
+        G.append("text")
+          .attr("class", "y-axis-label")
+          .attr("x", 80)
+          .attr("y", 30)
+          .attr("text-anchor", "middle")
+          .style("fill", "black")
+          .style("background-color", "rgba(255, 255, 255, 0.8)")
+          .text("Win-Loss Percentage");
       }
     );
 }
