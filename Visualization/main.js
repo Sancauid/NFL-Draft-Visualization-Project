@@ -228,9 +228,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
   const textData = ["Player", "Position", "Weighted Avg. Value", "Team Drafting", "Pick Number"];
   const textYPositions = [20, 40, 60, 80, 100];
 
-  console.log(dataDraft)
-  console.log(filtroEquipo)
-
   svg2
     .selectAll("g")
     .data(dataDraft, d => d.Pick)
