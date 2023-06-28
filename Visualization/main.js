@@ -230,8 +230,9 @@ function scatterPlotDraft(dataDraftUnfiltered) {
       .scaleExtent([1, 20])
       .translateExtent([[0, 0], [WIDTH, HEIGHT]])
       .on("zoom", handleZoom));
-
-  const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+      
+  const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+    .range(d3.schemeCategory10.concat(["#FF0010", "#10FF00", "#0012FF", "#FF00FF"]));
 
   const xScale = d3.scaleLinear()
     .domain([0, dataDraft.length])
@@ -246,6 +247,8 @@ function scatterPlotDraft(dataDraftUnfiltered) {
   
   const textData = ["Player", "Position", "Weighted Avg. Value", "Team Drafting", "Pick Number"];
   const textYPositions = [20, 40, 60, 80, 100];
+
+  const legendData = Array.from(new Set(dataDraft.map(d => d.Pos)));
 
   svg2
     .selectAll("g")
@@ -316,6 +319,31 @@ function scatterPlotDraft(dataDraftUnfiltered) {
           .attr("x", 70)
           .attr("y", (d, i) => textYPositions[i] + 60)
           .text(d => d);
+
+        const legend = enter
+          .append("g")
+          .attr("class", "legend")
+          .attr("transform", `translate(${INNER_WIDTH}, 20)`);
+
+        legend.selectAll("rect")
+          .data(legendData)
+          .enter()
+          .append("rect")
+          .attr("x", 0)
+          .attr("y", (d, i) => i * 20)
+          .attr("width", 10)
+          .attr("height", 10)
+          .attr("fill", d => colorScale(d));
+
+        legend.selectAll("text")
+          .data(legendData)
+          .enter()
+          .append("text")
+          .attr("x", 15)
+          .attr("y", (d, i) => i * 20 + 9)
+          .text(d => d)
+          .style("font-size", "10px");
+
       },
       update => {
         update.select(".x-axis")
