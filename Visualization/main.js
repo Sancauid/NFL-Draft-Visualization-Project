@@ -17,6 +17,9 @@ const WIDTHVIS = WIDTH - MARGIN.right - MARGIN.left;
 const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
 const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
+let draftPlayer;
+let kickers;
+let teams;
 
 function heatMapKickers(kickersPercentages, currentYearIndex) {
 
@@ -386,11 +389,48 @@ function scatterPlotDraft(dataDraftUnfiltered) {
 
 function bubblePlotTeams(dataTeams) {
 
-  console.log(dataTeams)
+  console.log(dataTeams);
 
   const svg3 = d3.select("#bubbleplot")
     .attr("width", WIDTH)
     .attr("height", HEIGHT);
+
+  const colorScale = d3.scaleOrdinal()
+    .domain(dataTeams.map(d => d.Tm))
+    .range([
+      "#97233F", // Arizona Cardinals
+      "#A71930", // Atlanta Falcons
+      "#241773", // Baltimore Ravens
+      "#00338D", // Buffalo Bills
+      "#0085CA", // Carolina Panthers
+      "#0B162A", // Chicago Bears
+      "#FB4F14", // Cincinnati Bengals
+      "#311D00", // Cleveland Browns
+      "#041E42", // Dallas Cowboys
+      "#002244", // Denver Broncos
+      "#0076B6", // Detroit Lions
+      "#203731", // Green Bay Packers
+      "#03202F", // Houston Texans
+      "#002C5F", // Indianapolis Colts
+      "#101820", // Jacksonville Jaguars
+      "#E31837", // Kansas City Chiefs
+      "#A5ACAF", // Las Vegas Raiders
+      "#0073CF", // Los Angeles Chargers
+      "#003594", // Los Angeles Rams
+      "#008E97", // Miami Dolphins
+      "#4F2683", // Minnesota Vikings
+      "#002244", // New England Patriots
+      "#000000", // New Orleans Saints
+      "#0B2265", // New York Giants
+      "#004C54", // New York Jets
+      "#008E97", // Philadelphia Eagles
+      "#FFB612", // Pittsburgh Steelers
+      "#4B92DB", // San Francisco 49ers
+      "#AA0000", // Seattle Seahawks
+      "#773141", // Tampa Bay Buccaneers
+      "#FB4F14", // Tennessee Titans
+      "#773141"  // Washington Football Team
+    ]);
 
   const xScale = d3.scaleLinear()
     .domain([0, d3.max(dataTeams, d => parseInt(d.W) + 100)])
@@ -400,6 +440,10 @@ function bubblePlotTeams(dataTeams) {
     .domain([d3.min(dataTeams, d => parseFloat(d.WLPer) - 0.1), d3.max(dataTeams, d => parseFloat(d.WLPer) + 0.1)])
     .range([INNER_HEIGHT, MARGIN.top]);
 
+  const widthScale = d3.scaleLinear()
+    .domain([d3.min(dataTeams, d => parseFloat(d.YearsActive)), d3.max(dataTeams, d => parseFloat(d.YearsActive))])
+    .range([100, 350]);
+  
   const xAxis = d3.axisBottom(xScale);
   const yAxis = d3.axisLeft(yScale);
 
@@ -408,16 +452,14 @@ function bubblePlotTeams(dataTeams) {
     .data(dataTeams)
     .join(
       enter => {
-
         const G = enter.append("g");
 
         G.append("circle")
-          .data(dataTeams)
           .attr("class", "teamBubbles")
           .attr("cx", d => xScale(parseInt(d.W)))
           .attr("cy", d => yScale(parseFloat(d.WLPer)))
-          .attr("r", 15)
-          .attr("fill", "red")
+          .attr("r", d => widthScale(parseFloat(d.YearsActive)) / 15)
+          .attr("fill", d => colorScale(d.Tm));
 
         enter.append("g")
           .attr("class", "x-axis")
@@ -428,11 +470,10 @@ function bubblePlotTeams(dataTeams) {
           .attr("class", "y-axis")
           .attr("transform", `translate(${MARGIN.left}, 0)`)
           .call(yAxis);
-
       }
     );
-
 }
+
 
 d3.csv(KICKERS_DATABASE)
   .then((kickers) => {
@@ -444,12 +485,22 @@ d3.csv(KICKERS_DATABASE)
 
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
+      draftPlayer = draft
       scatterPlotDraft(draft)
   })
   .catch((error) => console.log(error));
 
-d3.csv(TEAMS_DATABASE)
+  d3.csv(TEAMS_DATABASE)
   .then((teams) => {
-    bubblePlotTeams(teams)
-})
-.catch((error) => console.log(error));
+    const updatedTeams = teams.map((team) => {
+      const fromYear = parseInt(team.From);
+      const toYear = parseInt(team.To);
+      const yearsActive = toYear - fromYear + 1;
+
+      return { ...team, YearsActive: yearsActive.toString() };
+    });
+
+    bubblePlotTeams(updatedTeams);
+  })
+  .catch((error) => console.log(error));
+
