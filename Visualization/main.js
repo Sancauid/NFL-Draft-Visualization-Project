@@ -1,6 +1,6 @@
 DRAFT_DATABASE = "https://gist.githubusercontent.com/kunafuego/106a696e84cbd056e4e2c6a2cc6e8387/raw/db12d21344c086a6e1c6a4e8b769e086e62043bf/draft.csv";
 KICKERS_DATABASE = "https://gist.githubusercontent.com/Sancauid/aee1813abb6fa4021006d6e5730ceac3/raw/74b87d4d8e9177b8987447d8009e089448c98e4c/kickers.csv";
-TEAMS_DATABASE = "https://gist.githubusercontent.com/Sancauid/c79a546a512ab67dfcf6a2c61923c8e7/raw/6b131735607d1930c55d6d23eb773c4b509d709e/teams.csv";
+TEAMS_DATABASE = "https://gist.githubusercontent.com/Sancauid/c79a546a512ab67dfcf6a2c61923c8e7/raw/8cdd1cd9bb3726ac86fe0484966201571d51e199/teams.csv";
 
 const WIDTH = 1200;
 const HEIGHT = 600;
@@ -47,29 +47,9 @@ function heatMapKickers(kickersPercentages, currentYearIndex) {
       .style("top", "750px")
 
   svg.on("click", function() {
-      addFootball();
       invertOrder();
       });
 
-      function addFootball() {
-        const initialX = (order === 1) ? -50 : WIDTH - 50;
-        const finalX = (order === 1) ? WIDTH - 50 : -50;
-      
-        svg.append("image")
-          .attr("href", "football.png")
-          .attr("width", 40)
-          .attr("height", 40)
-          .attr("x", initialX)
-          .attr("y", HEIGHT / 2 - 45)
-          .style("opacity", 0)
-          .transition()
-          .duration(1000)
-          .attr("x", finalX)
-          .style("opacity", 1)
-          .on("end", function() {
-            d3.select(this).remove();
-          });
-      }
       
   svg
     .selectAll("g")
@@ -220,7 +200,12 @@ function runHeatMap() {
   heatMapKickers(kickersPercentages, currentYearIndex);
 }
 
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+.range(d3.schemeCategory10.concat(["#FF0010", "#10FF00", "#0012FF", "#FF00FF"]));
 
+const svg2 = d3.select("#scatterplot")
+  .attr("width", WIDTH)
+  .attr("height", HEIGHT - 40)
 
 function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
 
@@ -228,11 +213,8 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
     .scaleExtent([1, 20])
     .translateExtent([[0, 0], [WIDTH, HEIGHT]])
     .on("zoom", handleZoom);
-  
-  const svg2 = d3.select("#scatterplot")
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT - 40)
-    .call(zoom);
+
+  svg2.call(zoom);
 
   function handleZoom(event) {
       
@@ -250,6 +232,10 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
       .call(yAxis.scale(transform.rescaleY(yScale)));
   }
 
+  svg2.on("click", () => {
+    scatterPlotDraft(dataDraftUnfiltered, false);
+    bubblePlotTeams(dataTeams, draft)
+    });
 
   const dataDraft = dataDraftUnfiltered
   .filter(d => filtroEquipo === false || d.Tm === filtroEquipo)
@@ -259,9 +245,6 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
   }));
 
   console.log(dataDraft)
-      
-  const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-    .range(d3.schemeCategory10.concat(["#FF0010", "#10FF00", "#0012FF", "#FF00FF"]));
 
   const xScale = d3.scaleLinear()
     .domain([0, 254])
@@ -283,11 +266,13 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
     .selectAll("g")
     .data(dataDraft, d => d.Pick)
     .join(
+
       enter => {
+
         const G = enter.append("g");
 
         G.append("circle")
-          .data(dataDraft)
+          .data(dataDraft, d => d.Pick)
           .attr("class", "playerDots")
           .attr("cx", d => xScale(d.Pick))
           .attr("cy", d => yScale(parseInt(d.wAV)))
@@ -336,12 +321,12 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .style("background-color", "rgba(255, 255, 255, 0.8)")
           .text("Weighted Avg. Value");
 
-        enter.append("g")
+        G.append("g")
           .attr("class", "x-axis")
           .attr("transform", `translate(0, ${INNER_HEIGHT})`)
           .call(xAxis);
 
-        enter.append("g")
+        G.append("g")
           .attr("class", "y-axis")
           .attr("transform", `translate(${MARGIN.left}, 0)`)
           .call(yAxis);
@@ -392,31 +377,38 @@ function scatterPlotDraft(dataDraftUnfiltered, filtroEquipo) {
           .style("font-size", "10px");
 
       },
+
       update => {
-
+        
         update.selectAll(".playerDots")
-          .data(dataDraft, d => d.Pick)
+        .data(dataDraft, d => d.Pick)
+        .attr("cx", d => xScale(d.Pick))
+        .attr("cy", d => yScale(parseInt(d.wAV)))
+        .attr("fill", d => colorScale(d.Pos))
+        .style("opacity", d => (filtroEquipo === false || d.Tm === filtroEquipo) ? 1 : 0);
 
-          return update
+        update.selectAll(".x-axis")
+        .attr("transform", `translate(0, ${INNER_HEIGHT})`)
+        .call(xAxis);
 
-      }, 
-      exit => { 
-
-        exit.selectAll(".playerDots")
-          .data(dataDraft, d => d.Pick)
-          .exit()
-          .remove();
-
-        return exit
+        update.selectAll(".y-axis")
+        .attr("transform", `translate(${MARGIN.left}, 0)`)
+        .call(yAxis);
+            
+      return update;
 
       }
     );
-
 }
+
 
 function bubblePlotTeams(dataTeams, draft) {
 
-  console.log(dataTeams);
+  svg3.on("dblclick", function(d) 
+  { d3.selectAll(".teamBubbles").attr("stroke", "none");
+    d3.selectAll(".teamBubbles").attr("opacity", "1");
+    scatterPlotDraft(draft, false)
+ })
 
   const colorScale = d3.scaleOrdinal()
     .domain(dataTeams.map(d => d.Tm))
@@ -433,12 +425,10 @@ function bubblePlotTeams(dataTeams, draft) {
       "#002244", // Denver Broncos
       "#0076B6", // Detroit Lions
       "#203731", // Green Bay Packers
-      "#03202F", // Houston Texans
       "#002C5F", // Indianapolis Colts
       "#101820", // Jacksonville Jaguars
       "#E31837", // Kansas City Chiefs
       "#A5ACAF", // Las Vegas Raiders
-      "#0073CF", // Los Angeles Chargers
       "#003594", // Los Angeles Rams
       "#008E97", // Miami Dolphins
       "#4F2683", // Minnesota Vikings
@@ -451,7 +441,7 @@ function bubblePlotTeams(dataTeams, draft) {
       "#4B92DB", // San Francisco 49ers
       "#AA0000", // Seattle Seahawks
       "#773141", // Tampa Bay Buccaneers
-      "#FB4F14", // Tennessee Titans
+      "#0076B6", // Tennessee Titans
       "#773141"  // Washington Football Team
     ]);
 
@@ -478,13 +468,21 @@ function bubblePlotTeams(dataTeams, draft) {
 
         const G = enter.append("g");
 
-        G.append("circle")
+        const circles = G.append("circle")
           .attr("class", "teamBubbles")
           .attr("cx", d => xScale(parseInt(d.wAVSum)))
           .attr("cy", d => yScale(parseFloat(d.WLPer)))
           .attr("r", d => widthScale(parseFloat(d.YearsActive)) / 15)
           .attr("fill", d => colorScale(d.Tm))
+          .attr("stroke", "none")
+          .attr("opacity", "1")
           .on("click", (event, d) => {
+            d3.selectAll(".teamBubbles").attr("stroke", "none");
+            d3.selectAll(".teamBubbles").attr("opacity", "0.2");
+            d3.select(event.currentTarget).attr("stroke", "black");
+            d3.select(event.currentTarget).attr("opacity", "1");
+            d3.select(event.currentTarget).attr("stroke-width", 3);
+            d3.select(event.currentTarget).raise();
             scatterPlotDraft(draft, d.Tm)
           })
           .append("title")
@@ -554,7 +552,6 @@ d3.csv(KICKERS_DATABASE)
 
 d3.csv(DRAFT_DATABASE)
     .then((draft) => {
-      draftPlayer = draft
       scatterPlotDraft(draft, false)
   })
   .catch((error) => console.log(error));
