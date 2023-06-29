@@ -58,21 +58,6 @@ body {
     margin: 10px;
 }
 
-.row2 {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: auto;
-    margin: 10px;
-}
-
-.row3 {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: auto;
-    margin: 10px;
-}
 
 .columns {
     display: block;
@@ -86,4 +71,23 @@ body {
 svg {
     border: 1px solid gray;
     margin-top: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #5fd683;
 }
