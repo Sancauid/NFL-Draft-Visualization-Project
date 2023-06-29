@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Informe Proyecto</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Informe Proyecto</h1>
+
+        <div class="response">
+            <h3>Integrantes</h2>
+                <p>Domingo Agüero Ureta</p>
+                <p>Pablo San Francisco Rolla</p>
+        </div>
+
+        <div class="case">
+            <h2>Situación de dominio</h2>
+                <div class="response">
+                    <h4>Contexto de la situación y la naturaleza de los datos</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>La National Football League (NFL) es una liga profesional de fútbol americano en los Estados Unidos y la más grande del mundo. 
+                        Cada año, estos equipos compiten en una temporada regular y luego en los playoffs para determinar al campeón del Super Bowl, uno de los eventos más vistos año a año. </p>
+                    <p>Dentro de la NFL hay varias situaciones que no se dan en otros deportes, como por ejemplo los "Field Goals", que dan la posibilidad al equipo que se encuentra atacando 
+                        de sumar 3 puntos si la pelota pasa entre los postes. Esto puede parecer fácil, pero en la práctica no es así, ya que existen múltiples variables que pueden afectar al pateador, como el clima, la presión, etc.</p>
+                    <p>Otra situación que se da en la NFL es el "Draft", que es un evento anual en el que los equipos seleccionan a jugadores universitarios para que se unan a sus equipos. El "Draft" funciona con el equipo 
+                        con peor desempeño en la temporada anterior seleccionando primero, y el equipo con mejor desempeño seleccionando último. Esto se hace para que los equipos que no tuvieron un buen desempeño tengan la posibilidad de
+                        mejorar su plantilla con jugadores de alto nivel, equiparando el nivel de la liga y que no existan equipos que siempre ganen y equipos que siempre pierdan, como se puede dar en otros deportes.
+                        Pero no siempre elegir primero significa necesariamente que se selecciona al mejor jugador, que es algo que se ve año a año, por lo que intentaremos visualizar esto con el draft del año 2000.</p>
+                    <p>Para poder visualizar y comprender lo anterior se utilizarán los siguientes datasets:</p>
+                    <p>- kickers.csv</p>
+                    <p>- draft.csv</p>
+                    <p>- teams.csv</p>
+                    <p>Al dataset de los kickers se tuvo que cambiar el nombre de cada columna para que se pueda manejar la información en el código, además se agregó
+                        una columna con el porcentaje de aciertos que se tuvo a cada distance, esto se hizo dividiendo los field goals hechos por los field goals intentados, por 
+                    dada rango de distancias, también en algunos años que no existían esos datos, se removieron del dataset. </p>
+                    <p> Al dataset del draft no se le hicieron modificaciones, pero para entender mejor el dataset es necesario explicar una columna que posee, que es el wAV o
+                        "Weighted Average Value", que se calcula con el "Average Value" que corresponde a una cifra establecida por PFR, la fuente de los datos. Esta cifra sirve para
+                        establecer el valor númerico de lo que hizo un jugador en una temporada. Ahora, el wAV se calcula mediante una sumatoria de todos los "Average Value", pero 
+                        ponderando 100% el mejor año, 95% el segundo mejor y así sucesivamente. </p>
+                    <p> Al dataset de los equipos se hicieron algunas modificaciones, se agregó una columna con el total wAV que adquirió cada equipo en el Draft del año 2000 y también
+                        se tuvieron que hacer modificaciones a los nombres de las columnas para poder manipularlas en código. </p>
+                </div>
+                <div class="response">
+                    <h4>Fuente original de los datos</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Pro Football Reference (www.pro-football-reference.com): Este sitio web es una fuente popular y confiable de estadísticas de la NFL. 
+                        Proporciona múltiples datos, incluyendo información sobre jugadores, equipos, temporadas, draft, entre otros.</p>
+                    <p>Enlace: <a href="https://www.pro-football-reference.com/years/NFL/kicking.htm">Data de "Kicking"</a></p>
+                    <p>Enlace: <a href="https://www.pro-football-reference.com/years/2000/draft.htm">Data del Draft del año 2000</a></p>
+                    <p>Enlace: <a href="https://www.pro-football-reference.com/teams/">Data de todos los Equipos</a></p>
+                </div>
+                <div class="response">
+                    <h4>Usuario objetivo</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>El usuario objetivo sería cualquier persona interesada en la NFL, y le interesaría comprender como puede han ido variando 
+                        la distancia de los "Field Goals" y como puede influir (o no) el lugar en el que se elige en el draft en el desempeño de los jugadores, además 
+                        de comprender como les ha ido a los equipos participantes de la NFL historicamente. </p>
+                </div>
+                <div class="response">
+                    <h4>Uso de la herramienta</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Esta herramient podría ser potencialmente influyente para personas dentro de la liga, ya que como varían las distancias y porcentajes de 
+                        los "Field Goals" podría hacer que el "Head Coach" tome alguna decisión distinta en un partido o ver las estadísticas del draft podrían 
+                        hacer que el "General Manager", la persona encargada de escoger los jugadores en el Draft, identifique tendencias de posiciones y escoger 
+                        de manera más informada.</p>
+                    <p>También en esta herramienta se pueden ver estadísiticas de equipo, que pueden permitir entender mejor a los aficionados de algún equipo, 
+                        o también ver como un draft puede tener repercusiones en la cantidad de partidos ganados o perdidios para un equipo.</p>
+                    </p>
+                </div>
+
+        </div>
+
+        <div class="case">
+            <h2>Abstracción de datos</h2>
+                <div class="response">
+                    <h4>Tipos de datos a utilizar en el proyecto</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Los datos singulares que están son los siguientes:</p>
+                    <p></p>
+                </div>
+                <div class="response">
+                    <h4>Tipos de atributos presente en los datos</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                    <table>
+                        <thead>
+                          <tr>
+                            <th>Año</th>
+                            <th>Distancia</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Año de las estadísticas</td>
+                            <td>Rango de la distancia de pateo</td>
+                            <td>Porcentaje de acierto por parte del pateador</td>
+                        </tbody>
+                        <tbody>
+                            <tr>
+                              <td>Nombre del lenguaje</td>
+                              <td>Descripción del lenguaje</td>
+                              <td>Abstracción del lenguaje</td>
+                            </tr>
+                          </tbody>
+                      </table>
+                </div>
+        </div>
+
+        <div class="case">
+            <h2>Abstracción de tareas</h2>
+                <div class="response">
+                    <h4>Tarea 1 (acción + objetivo) + justificación según el dominio presentado</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Encontrar correlaciones entre los porcentajes de acierto de pateo y el año correspondiente.</p>
+                    <p>Al encontrar correlaciones, el usuario podrá observar y comprender cómo han ido variando los niveles de acierto a lo largo del tiempo. 
+                        A partir de esto, se podrán identificar posibles tendencias en los datos, 
+                        permitiendo al usuario obtener una mejor comprensión de los niveles de acierto de los pateadores.</p>
+                </div>
+                <div class="response">
+                    <h4>Tarea 2 (acción + objetivo) + justificación según el dominio presentado</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Explorar las distintas posiciones y valores individuales de los jugadores drafteados.</p>
+                    <p>Al explorar lo anterior, se puede evaluar el rendimiento de los jugadores en función de su posición en el draft. 
+                        Esto proporciona información valiosa para analizar la efectividad de las selecciones en relación con las expectativas
+                         y necesidades del equipo.</p>
+                </div>
+                <div class="response">
+                    <h4>Tarea 3 (acción + objetivo) + justificación según el dominio presentado</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Identificar relaciones entre el nivel de los jugadores drafteados y su efecto en el rendimiento del equipo.</p>
+                    <p>Al hacer esto, los responsables de la toma de decisiones, como los entrenadores y los gerentes generales, pueden hacer selecciones 
+                        más informadas y estratégicas durante el proceso de draft.</p>
+                </div>
+        </div>
+
+        <div class="case">
+            <h2>Codificación visual e interacciones</h2>
+                <div class="response">
+                    <h4>Decisiones de diseño relacionadas a la primera tarea visual</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Para representar los porcentajes de acierto, se decidió hacer un heatmap, donde se utilizó una escala de rojo a verde.
+                        Color de los rectangulos (Canal) Entre más verde, mayor porcentaje de acierto, y rojo menor.</p>
+                    <p>Este heatmap va variando año a año. </p>
+                    <p>Además, al hacer click sobre esta visualización, cambia el sentido del tiempo, por lo que si el tiempo estaba en retroceso y se hace click,
+                        el tiempo estaría avanzando. </p>
+                    <p>Para representar los rangos de distancias, se decidió hacer que estos estén ordenados lado a lado y que tengan una parecido a 
+                        una cancha de fútbol americano real, para ayudar a entender la visualización. </p>
+                    <p>Tooltip en Rectángulo (Decisión de diseño): Esto pausa el tiempo, además al hacer este hover se abre un tooltip con 
+                        el porcentaje de acierto desde esa distancia, por lo que se podría ver el año, la distancia y el porcentaje de acierto </p>
+
+                        <p>Tooltip, click para cambiar orden, hover para parar el tiempo, color,  </p>
+                </div>
+                <div class="response">
+                    <h4>Decisiones de diseño relacionadas a la segunda tarea visual</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                    <p>Tooltip, doble click para volver a normal, click en burbuja para filtrar en tercera tarea visual (vista coordinada), tamaño burbuja (canal de magnitud)
+                        grupo color (canal), posición horizontal y vertical  </p>
+                </div>
+                <div class="response">
+                    <h4>Decisiones de diseño relacionadas a la tercera tarea visual</h4>
+                    <!-- Puedes agregar los P que sean necesarios -->
+                    <h4>Respuesta:</h4>
+                    <p>Modifica solo este texto (no el de arriba) para poner tu respuesta</p>
+                    <p>Tooltip, click, zoom y panning (ejes ajustables), filtro, filtro vista coordinada, grupo color (canal), posición horizontal y vertical   </p>
+                </div>
+        </div>
+
+        <div class="case">
+            <h3>
+                <a href="vis.html">Enlace para acceder a la visualización</a>
+            </h3>
+        </div>
+
+</body>
+
+</html>
